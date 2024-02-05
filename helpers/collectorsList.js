@@ -41,9 +41,12 @@ module.exports = {
 /**
  * @typedef CollectorData
  * @property {import('../collectors/APICallCollector').APICallReport=} apis
+ * @property {import('../collectors/AutofillCollector').LoginSignupClassification=} autofill
  * @property {import('../collectors/CMPCollector').CMPResult[]=} cmps
  * @property {import('../collectors/CookieCollector').CookieData[]=} cookies
+ * @property {import('../collectors/CookieHunterHeuristicsCollector').LoginSignupClassification=} cookieHunterHeuristics
  * @property {{ present: string[], visible: string[]}=} elements
+ * @property {string[]} links
  * @property {import('../collectors/RequestCollector').RequestData[]=} requests
  * @property {string=} screenshots
  * @property {import('../collectors/TargetCollector').TargetData[]=} targets

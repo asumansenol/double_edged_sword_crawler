@@ -12,12 +12,13 @@ program
     .option('-o, --output <path>', 'path to the output file')
     .parse(process.argv);
 
-if (!program.input || !program.output) {
-    program.help();
+const options = program.opts();
+if (!options.input || !options.output) {
+    options.help();
     process.exit(1);
 }
 
-const dataDir = program.input;
+const dataDir = options.input;
 
 const dataFiles = fs.readdirSync(dataDir)
     .filter(file => {
@@ -271,4 +272,4 @@ stats.targets.mostTargets = mostTargets;
 stats.apis.popularity = Array.from(apiPopularity).sort(([, aCount], [, bCount]) => bCount - aCount);
 stats.apis.mostAPIsCalled = mostAPIsCalled.sort(([, aCount], [, bCount]) => bCount - aCount).slice(0, 50);
 
-fs.writeFileSync(program.output, JSON.stringify(stats, null, 2));
+fs.writeFileSync(options.output, JSON.stringify(stats, null, 2));

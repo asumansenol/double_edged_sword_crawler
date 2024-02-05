@@ -106,7 +106,8 @@ class APICallCollector extends BaseCollector {
                 this._calls.push({
                     source: breakpoint.source,
                     description: breakpoint.description,
-                    arguments: breakpoint.arguments
+                    arguments: breakpoint.arguments,
+                    timeStamp: breakpoint.timeStamp,
                 });
             }
         }
@@ -149,6 +150,7 @@ class APICallCollector extends BaseCollector {
                     this._calls.push({
                         ...call,
                         source: breakpoint.source,
+                        timeStamp: breakpoint.timeStamp,
                     });
                 } else {
                     this._log(`Missing call arguments for breakpoint ${breakpoint.id}`);

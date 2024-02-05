@@ -20,7 +20,8 @@ if (typeof stack === "string") {
             description: 'DESCRIPTION',
             stack,
             url,
-            ARGUMENT_COLLECTION
+            ARGUMENT_COLLECTION,
+            timeStamp: Date.now()
         };
         window.registerAPICall(JSON.stringify(data));
     }

@@ -40,12 +40,15 @@
   },
   "dependencies": {
     "@duckduckgo/autoconsent": "^4.1.1",
+    "@tensorflow/tfjs": "^4.10.0",
+    "@tensorflow/tfjs-node": "^4.10.0",
     "async": "^2.6.1",
     "chalk": "^2.4.1",
     "clickhouse": "^2.6.0",
     "commander": "^2.19.0",
     "progress": "^2.0.3",
-    "puppeteer": "^10.2.0",
+    "puppeteer": "^20.5.0",
+    "puppeteer-autoscroll-down": "^1.1.2",
     "tldts": "^4.0.3"
   }
 }

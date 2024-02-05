@@ -315,6 +315,7 @@ class TrackerTracker {
                     arguments: payload.args,
                     source: null,
                     description: payload.description,
+                    timeStamp: payload.timeStamp,
                 });
             }
             return null;
@@ -325,6 +326,7 @@ class TrackerTracker {
             saveArguments: breakpoint.saveArguments,
             arguments: payload.args,
             source: payload.url,
+            timeStamp: payload.timeStamp,
         };
     }
 

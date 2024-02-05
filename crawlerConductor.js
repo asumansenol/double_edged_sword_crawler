@@ -11,6 +11,8 @@ const downloadCustomChromium = require('./helpers/downloadCustomChromium');
 const BaseCollector = require('./collectors/BaseCollector');
 const notABot = require('./helpers/notABot');
 
+chalk.enabled = false;
+
 const MAX_NUMBER_OF_CRAWLERS = 38;// by trial and error there seems to be network bandwidth issues with more than 38 browsers. 
 const MAX_NUMBER_OF_RETRIES = 2;
 

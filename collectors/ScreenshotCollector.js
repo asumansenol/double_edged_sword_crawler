@@ -21,7 +21,7 @@ class ScreenshotCollector extends BaseCollector {
     async getData() {
         await this._cdpClient.send('Page.enable');
 
-        const result = await this._cdpClient.send('Page.captureScreenshot', {format: 'jpeg', quality: 85});
+        const result = await this._cdpClient.send('Page.captureScreenshot', {format: 'jpeg', quality: 85, captureBeyondViewport: true});
 
         return result.data;
     }

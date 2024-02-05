@@ -4,10 +4,15 @@ const chalk = require('chalk').default;
 const {createTimer} = require('./helpers/timer');
 const wait = require('./helpers/wait');
 const tldts = require('tldts');
-
+const pageUtils = require('./helpers/utils');
+const fs = require('fs');
+const fpSrc = fs.readFileSync('./helpers/fingerprintDetection.js', 'utf8');
+const privAcceptSource = fs.readFileSync('./helpers/privAccept.js', 'utf8');
+const ACCEPT_ALL_COOKIES = true;
 const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36';
 const MOBILE_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10; Pixel 2 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Mobile Safari/537.36';
 
+chalk.enabled = false;
 const DEFAULT_VIEWPORT = {
     width: 1440,//px
     height: 812//px
@@ -37,12 +42,14 @@ function openBrowser(log, proxyHost, executablePath) {
             // enable FLoC
             '--enable-blink-features=InterestCohortAPI',
             '--enable-features="FederatedLearningOfCohorts:update_interval/10s/minimum_history_domain_size_required/1,FlocIdSortingLshBasedComputation,InterestCohortFeaturePolicy"',
-            '--js-flags="--async-stack-traces --stack-trace-limit 32"'
-        ]
+            '--js-flags="--async-stack-traces --stack-trace-limit 32"',
+            '--show-autofill-signatures'
+        ],
+        headless: 'new'
     };
     if (VISUAL_DEBUG) {
         args.headless = false;
-        args.devtools = true;
+        args.devtools = false;
     }
     if (proxyHost) {
         let url;
@@ -61,6 +68,13 @@ function openBrowser(log, proxyHost, executablePath) {
     }
 
     return puppeteer.launch(args);
+}
+
+/**
+ * @param {number} waitTime
+ */
+function sleep(waitTime) {
+    return new Promise(resolve => setTimeout(resolve, waitTime));
 }
 
 /**
@@ -132,7 +146,7 @@ async function getSiteData(context, url, {
 
         try {
             // we have to pause new targets and attach to them as soon as they are created not to miss any data
-            await cdpClient.send('Target.setAutoAttach', {autoAttach: true, waitForDebuggerOnStart: true});
+            await cdpClient.send('Target.setAutoAttach', {autoAttach: true, waitForDebuggerOnStart: true, flatten: true});
         } catch (e) {
             log(chalk.yellow(`Failed to set "${target.url()}" up.`), chalk.gray(e.message), chalk.gray(e.stack));
             return;
@@ -150,7 +164,13 @@ async function getSiteData(context, url, {
         try {
             // resume target when all collectors are ready
             await cdpClient.send('Runtime.enable');
-            await cdpClient.send('Runtime.runIfWaitingForDebugger');
+            cdpClient.on('sessionattached', async session => {
+                try {
+                    await session.send('Runtime.runIfWaitingForDebugger');
+                } catch (err) {
+                    console.error(err);
+                }
+            });
         } catch (e) {
             log(chalk.yellow(`Failed to resume target "${target.url()}"`), chalk.gray(e.message), chalk.gray(e.stack));
             return;
@@ -164,7 +184,17 @@ async function getSiteData(context, url, {
 
     // optional function that should be run on every page (and subframe) in the browser context
     if (runInEveryFrame) {
+        await page.evaluateOnNewDocument(fpSrc);
         page.evaluateOnNewDocument(runInEveryFrame);
+    }
+
+    for (let collector of collectors) {
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            await collector.addListener(page);
+        } catch (e) {
+            log(chalk.yellow(`${collector.id()} failed to attach to page`), chalk.gray(e.message), chalk.gray(e.stack));
+        }
     }
 
     // We are creating CDP connection before page target is created, if we create it only after
@@ -172,13 +202,20 @@ async function getSiteData(context, url, {
     const cdpClient = await page.target().createCDPSession();
 
     // without this, we will miss the initial request for the web worker or service worker file
-    await cdpClient.send('Target.setAutoAttach', {autoAttach: true, waitForDebuggerOnStart: true});
+    await cdpClient.send('Target.setAutoAttach', {autoAttach: true, waitForDebuggerOnStart: true, flatten: true});
+    cdpClient.on('sessionattached', async session => {
+        try {
+            await session.send('Runtime.runIfWaitingForDebugger');
+        } catch (err) {
+            console.error(err);
+        }
+    });
 
     const initPageTimer = createTimer();
     for (let collector of collectors) {
         try {
             // eslint-disable-next-line no-await-in-loop
-            await collector.addTarget({url: url.toString(), type: 'page', cdpClient});
+            await collector.addTarget({url: url.toString(), type: 'page', cdpClient, page});
         } catch (e) {
             log(chalk.yellow(`${collector.id()} failed to attach to page`), chalk.gray(e.message), chalk.gray(e.stack));
         }
@@ -190,9 +227,18 @@ async function getSiteData(context, url, {
     }
 
     await page.setViewport(emulateMobile ? MOBILE_VIEWPORT : DEFAULT_VIEWPORT);
+    if(ACCEPT_ALL_COOKIES) {
+        await page.evaluateOnNewDocument(privAcceptSource);
+    }
+    let dialogClosed = false;
 
     // if any prompts open on page load, they'll make the page hang unless closed
-    page.on('dialog', dialog => dialog.dismiss());
+    page.on('dialog', async dialog => {
+        dialogClosed = true;
+        if (!dialogClosed) {
+            await dialog.dismiss();
+        }
+    });
 
     // catch and report crash errors
     page.on('error', e => log(chalk.red(e.message)));
@@ -229,8 +275,17 @@ async function getSiteData(context, url, {
     }
 
     // give website a bit more time for things to settle
-    await page.waitForTimeout(extraExecutionTimeMs);
+    await sleep(extraExecutionTimeMs);
 
+    if(ACCEPT_ALL_COOKIES) {
+        try {
+            await pageUtils.acceptAllCookies(page, log);
+        } catch (error) {
+            log('Error while detecting CMP', error.message);
+        }
+    }
+    // wait for all requests to finish
+    await sleep(extraExecutionTimeMs + 1000);
     const finalUrl = page.url();
     /**
      * @type {Object<string, Object>}
@@ -243,7 +298,8 @@ async function getSiteData(context, url, {
             // eslint-disable-next-line no-await-in-loop
             const collectorData = await collector.getData({
                 finalUrl,
-                urlFilter: urlFilter && urlFilter.bind(null, finalUrl)
+                urlFilter: urlFilter && urlFilter.bind(null, finalUrl),
+                page
             });
             data[collector.id()] = collectorData;
             log(`getting ${collector.id()} data took ${getDataTimer.getElapsedTime()}s`);
@@ -302,7 +358,7 @@ module.exports = async (url, options) => {
 
     const maxLoadTimeMs = options.maxLoadTimeMs || 30000;
     const extraExecutionTimeMs = options.extraExecutionTimeMs || 2500;
-    const maxTotalTimeMs = maxLoadTimeMs * 2;
+    const maxTotalTimeMs = maxLoadTimeMs * 5;
 
     try {
         data = await wait(getSiteData(context, url, {
