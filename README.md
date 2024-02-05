@@ -12,7 +12,7 @@ The paper is based on a novel machine learning-based method to automatically ide
 
 🕸 In order to identify authentication pages (i.e. login and signup pages) and quantify the prevalence of fingerprinting scripts across login and sign-up pages, we extended [Tracker Radar Collector](https://github.com/duckduckgo/tracker-radar-collector) by adding:
 
-1. **LoginSignupSignalsCollector:** extracts login signup-related page signals that will be used in the ML model.
+1. **LoginSignupSignalsCollector:** extracts login signup-related page signals to be used in the [ML model](https://github.com/asumansenol/double_edged_sword_crawler/tree/main/helpers/model).
 2. **FingerprintCollector:** detects fingerprinting-related function calls and property accesses.
 3. **LinkCollector:** extracts inner page links.
 4. **CookieHunterHeuristicsCollector:** extracts login and signup forms (if present) by using heuristics from a [study](https://dl.acm.org/doi/10.1145/3372297.3417869) by Drakonakis, Ioannidis, and Polakis.
