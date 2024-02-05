@@ -1,26 +1,26 @@
-# The Double Edged Sword: Identifying Authentication Pages and their Fingerprinting Behavior (WWW'24)
+# The Double-Edged Sword: Identifying Authentication Pages and their Fingerprinting Behavior (WWW'24)
 
-This repository contains the crawler code for our paper [The Double Edged Sword: Identifying Authentication Pages and their Fingerprinting Behavior](https://cosicdatabase.esat.kuleuven.be/backend/publications/files/conferencepaper/3756).
+This repository contains the crawler code for our paper [The Double-Edged Sword: Identifying Authentication Pages and their Fingerprinting Behavior](https://cosicdatabase.esat.kuleuven.be/backend/publications/files/conferencepaper/3756).
 
 The paper is based on a novel machine learning-based method to automatically identify authentication pages and a measurement of the prevalence of fingerprinting scripts across login and sign-up pages.
 
 
 # Crawler
+<p align="center">
+<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/48864422/302319928-0c313b3f-2eaf-4f97-9818-6cc1df303fed.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20240205%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240205T142832Z&X-Amz-Expires=300&X-Amz-Signature=1ee1d88b78572a321b86e4b6bdd8d64c0096b03c71a949872f7924b2495a4dd3&X-Amz-SignedHeaders=host&actor_id=48864422&key_id=0&repo_id=753114239" width=50% height=50%>
+</p>
 
-🕸 In order to identify authentication pages (i.e. login and signup pages) and quantify the prevalence of fingerprinting scripts across login and sign-up pages, we extended [Tracker Radar Collector(TRC)](https://github.com/duckduckgo/tracker-radar-collector) by adding:
+🕸 In order to identify authentication pages (i.e. login and signup pages) and quantify the prevalence of fingerprinting scripts across login and sign-up pages, we extended [Tracker Radar Collector](https://github.com/duckduckgo/tracker-radar-collector) by adding:
 
-1. LoginSignupSignalsCollector: extracts login signup related page signals that will be used in ML model.
-2. FingerprintCollector: detects finger-
-printing related function calls and property accesses.
-3. LinkCollector: extracts inner page links.
-4. CookieHunterHeuristicsCollector: extracts login and signup forms (if present) by using heuristics from a [study](https://dl.acm.org/doi/10.1145/3372297.3417869) by Drakonakis, Ioannidis, and Polakis.
-5. AutofillCollector: extracts login and signup forms, if available, using Chrome's autofill annotations.
-6. FathomCollector: extract login and signup forms, if any, by using Mozilla's [login](https://github.com/mozilla-services/fathom-login-forms/blob/96123f98b85bedc7bcc1bbc65f65181aab141526/lockwise-proof-of-concept/trainees.js#L239) and [signup](https://searchfox.org/mozilla-central/source/toolkit/components/satchel/SignUpFormRuleset.sys.mjs) page detector models.
-7. LoginSignupPageCollector: crawls both inner and homepages associated with a given URL to locate the login and signup pages corresponding to that URL. This collector first collects signals and sends them to our ML model to identify whether the page has any login and signup form.
+1. **LoginSignupSignalsCollector:** extracts login signup-related page signals that will be used in the ML model.
+2. **FingerprintCollector:** detects fingerprinting-related function calls and property accesses.
+3. **LinkCollector:** extracts inner page links.
+4. **CookieHunterHeuristicsCollector:** extracts login and signup forms (if present) by using heuristics from a [study](https://dl.acm.org/doi/10.1145/3372297.3417869) by Drakonakis, Ioannidis, and Polakis.
+5. **AutofillCollector:** extracts login and signup forms, if available, using Chrome's autofill annotations.
+6. **FathomCollector:** extracts login and signup forms, if any, by using Mozilla's [login](https://github.com/mozilla-services/fathom-login-forms/blob/96123f98b85bedc7bcc1bbc65f65181aab141526/lockwise-proof-of-concept/trainees.js#L239) and [signup](https://searchfox.org/mozilla-central/source/toolkit/components/satchel/SignUpFormRuleset.sys.mjs) page detector models.
+7. **LoginSignupPageCollector:** crawls both inner and homepages associated with a given URL to locate the login and signup pages corresponding to that URL. This collector first collects signals and sends them to our ML model to identify whether the page has any login and signup forms.
 
 🕸 To accept all the data processing, we integrated [Priv-Accept](https://github.com/marty90/priv-accept) into our crawler.
-
-🕸 Browser Add-on: We also developed a browser extension through the integration of our ML-based classifier. You can find the source code of this add-on in [this repo](https://github.com/asumansenol/login_signup_classfier_chrome_extension).
 
 ## How do I use it?
 
@@ -32,6 +32,14 @@ printing related function calls and property accesses.
 ```sh
 npm run crawl -- -u 'facebook.com' -o ./data/ -v -f -d "login_signup_pages"  --reporters 'cli,file' -l ./data/
 ```
+
+
+https://github.com/asumansenol/double_edged_sword_crawler/assets/48864422/014e24b6-2408-4888-a814-0767b350f8d1
+
+
+### Browser Add-on
+We also developed a browser extension through the integration of our ML-based classifier. You can find the source code of this add-on in [this repo](https://github.com/asumansenol/login_signup_classfier_chrome_extension).
+
 
 ### Reference
 
