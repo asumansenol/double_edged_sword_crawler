@@ -2,7 +2,7 @@
 
 This repository contains the crawler code for our paper [The Double-Edged Sword: Identifying Authentication Pages and their Fingerprinting Behavior](https://cosicdatabase.esat.kuleuven.be/backend/publications/files/conferencepaper/3756).
 
-The paper is based on a novel machine learning-based method to automatically identify authentication pages and a measurement of the prevalence of fingerprinting scripts across login and sign-up pages.
+The paper introduces a novel machine learning-based approach for automated identification of authentication pages (i.e. login and signup pages) and measures the prevalence of fingerprinting scripts on those pages. Achieving a precision and recall rate of **96-98%**, [our ML model](https://github.com/asumansenol/double_edged_sword_crawler/tree/main/helpers/model) uses [88 diverse features](https://github.com/asumansenol/double_edged_sword_crawler/blob/main/helpers/register_login_feature_extraction/register_login_signals.js) of authentication pages to cover different designs. This design makes our ML model more robust compared to previous methods that relied on heuristics and regex patterns, which often struggled to detect complicated authentication flows such as multi-step login processes.
 
 
 # Crawler
