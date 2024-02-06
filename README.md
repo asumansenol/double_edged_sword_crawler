@@ -40,6 +40,8 @@ https://github.com/asumansenol/double_edged_sword_crawler/assets/48864422/014e24
 ### Browser Add-on
 We also developed a browser extension through the integration of our ML-based classifier. You can find the source code of this add-on in [this repo](https://github.com/asumansenol/login_signup_classfier_chrome_extension).
 
+## Data & Analysis
+You can find the auxiliary data, Jupyter notebooks, and CSVs in the [analysis repository](https://github.com/asumansenol/double_edged_sword_data).
 
 ### Reference
 
